@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Stars, Sparkles } from '@react-three/drei';
-import { useRef, useState } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 
 function Sun() {
@@ -24,6 +24,45 @@ function SaturnRings({ distance, size }) {
       <ringGeometry args={[size * 1.6, size * 2.4, 64]} />
       <meshBasicMaterial color="#d4a574" side={THREE.DoubleSide} transparent opacity={0.6} />
     </mesh>
+  );
+}
+
+function AsteroidBelt({ innerRadius = 10.8, outerRadius = 12.2, count = 350 }) {
+  const groupRef = useRef();
+  const asteroids = useMemo(() => {
+    return Array.from({ length: count }, () => {
+      const angle = Math.random() * Math.PI * 2;
+      const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+      const size = 0.03 + Math.random() * 0.08;
+      const y = (Math.random() - 0.5) * 0.4;
+      const speed = 0.3 + Math.random() * 0.4;
+      return { angle, radius, size, y, speed, color: Math.random() > 0.5 ? '#8a7a6a' : '#a09080' };
+    });
+  }, [count, innerRadius, outerRadius]);
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = state.clock.elapsedTime * 0.15;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      {asteroids.map((a, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.cos(a.angle) * a.radius,
+            a.y,
+            Math.sin(a.angle) * a.radius
+          ]}
+          rotation={[Math.random() * Math.PI, Math.random() * Math.PI, 0]}
+        >
+          <icosahedronGeometry args={[a.size, 0]} />
+          <meshStandardMaterial color={a.color} roughness={0.8} metalness={0.1} />
+        </mesh>
+      ))}
+    </group>
   );
 }
 
@@ -98,7 +137,7 @@ export default function Scene() {
     <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#0a0908' }}>
       <div style={{ position: 'absolute', top: 24, left: 24, color: '#f4efe6', zIndex: 10, fontFamily: 'system-ui' }}>
         <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600 }}>Solar System</h1>
-        <p style={{ margin: '6px 0 0', opacity: 0.7 }}>Click planet for info · Drag to explore</p>
+        <p style={{ margin: '6px 0 0', opacity: 0.7 }}>Click planet for info · Asteroid belt between Mars & Jupiter</p>
         {selected && (
           <div style={{ marginTop: 16, padding: 12, background: 'rgba(20,17,14,0.7)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
             <strong>{selected}</strong>
@@ -120,6 +159,8 @@ export default function Scene() {
         {PLANETS.map(p => (
           <OrbitRing key={p.name} distance={p.distance} />
         ))}
+
+        <AsteroidBelt />
 
         {PLANETS.map(p => (
           <Planet key={p.name} {...p} onSelect={setSelected} />
