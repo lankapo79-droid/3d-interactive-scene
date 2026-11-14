@@ -78,17 +78,16 @@ function Planet({ distance, size, speed, color, name, hasMoon = false, hasRings 
     if (moonRef.current && hasMoon) moonRef.current.rotation.y = t * 3.5;
   });
 
-  // Make Earth extra visible
   const isEarth = name === 'Earth';
   const displayColor = isEarth ? '#4da6ff' : color;
-  const emissiveIntensity = isEarth ? (hovered ? 0.5 : 0.15) : (hovered ? 0.35 : 0.04);
+  const emissiveIntensity = isEarth ? (hovered ? 0.55 : 0.2) : (hovered ? 0.4 : 0.08);
 
   return (
     <group ref={groupRef}>
       <mesh
         ref={planetRef}
         position={[distance, 0, 0]}
-        scale={hovered ? 1.3 : (isEarth ? 1.1 : 1)}
+        scale={hovered ? 1.3 : (isEarth ? 1.15 : 1)}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
         onClick={(e) => { e.stopPropagation(); onSelect?.(name); }}
@@ -96,7 +95,7 @@ function Planet({ distance, size, speed, color, name, hasMoon = false, hasRings 
         <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial 
           color={displayColor} 
-          roughness={isEarth ? 0.4 : 0.55} 
+          roughness={isEarth ? 0.35 : 0.5} 
           metalness={0.1} 
           emissive={displayColor} 
           emissiveIntensity={emissiveIntensity} 
@@ -107,7 +106,7 @@ function Planet({ distance, size, speed, color, name, hasMoon = false, hasRings 
         <group ref={moonRef} position={[distance, 0, 0]}>
           <mesh position={[size * 2.8, 0.15, 0]}>
             <sphereGeometry args={[size * 0.25, 16, 16]} />
-            <meshStandardMaterial color="#eeeeee" />
+            <meshStandardMaterial color="#ffffff" />
           </mesh>
         </group>
       )}
@@ -124,7 +123,7 @@ function OrbitRing({ distance }) {
   const geo = new THREE.BufferGeometry().setFromPoints(points);
   return (
     <line geometry={geo}>
-      <lineBasicMaterial color="#e39a3c" transparent opacity={0.12} />
+      <lineBasicMaterial color="#e39a3c" transparent opacity={0.18} />
     </line>
   );
 }
@@ -144,12 +143,12 @@ export default function Scene() {
   const [selected, setSelected] = useState(null);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#0a0908' }}>
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#1a2332' }}>
       <div style={{ position: 'absolute', top: 24, left: 24, color: '#f4efe6', zIndex: 10, fontFamily: 'system-ui' }}>
         <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600 }}>Solar System</h1>
-        <p style={{ margin: '6px 0 0', opacity: 0.7 }}>Bumi (Earth) now bright blue · Click for info</p>
+        <p style={{ margin: '6px 0 0', opacity: 0.85 }}>Langit lebih cerah · Bumi nampak clear</p>
         {selected && (
-          <div style={{ marginTop: 16, padding: 12, background: 'rgba(20,17,14,0.7)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
+          <div style={{ marginTop: 16, padding: 12, background: 'rgba(20,17,14,0.75)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
             <strong>{selected === 'Earth' ? 'Bumi (Earth)' : selected}</strong>
             <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Click another planet or drag to continue</div>
           </div>
@@ -157,12 +156,12 @@ export default function Scene() {
       </div>
 
       <Canvas camera={{ position: [0, 12, 22], fov: 42 }} dpr={[1, 2]}>
-        <color attach="background" args={['#0a0908']} />
-        <ambientLight intensity={0.06} />
-        <pointLight position={[0, 0, 0]} intensity={3.2} color="#e39a3c" distance={40} />
+        <color attach="background" args={['#1a2332']} />
+        <ambientLight intensity={0.15} />
+        <pointLight position={[0, 0, 0]} intensity={3.5} color="#e39a3c" distance={45} />
 
-        <Stars radius={180} depth={100} count={6000} factor={7} saturation={0} fade speed={0.3} />
-        <Sparkles count={80} scale={30} size={1.2} speed={0.25} color="#f4efe6" />
+        <Stars radius={180} depth={100} count={4000} factor={5} saturation={0} fade speed={0.2} />
+        <Sparkles count={60} scale={30} size={1} speed={0.2} color="#f4efe6" />
 
         <Sun />
 
