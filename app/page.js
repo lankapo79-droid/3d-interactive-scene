@@ -35,8 +35,7 @@ function AsteroidBelt({ innerRadius = 10.8, outerRadius = 12.2, count = 350 }) {
       const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
       const size = 0.03 + Math.random() * 0.08;
       const y = (Math.random() - 0.5) * 0.4;
-      const speed = 0.3 + Math.random() * 0.4;
-      return { angle, radius, size, y, speed, color: Math.random() > 0.5 ? '#8a7a6a' : '#a09080' };
+      return { angle, radius, size, y, color: Math.random() > 0.5 ? '#8a7a6a' : '#a09080' };
     });
   }, [count, innerRadius, outerRadius]);
 
@@ -79,25 +78,36 @@ function Planet({ distance, size, speed, color, name, hasMoon = false, hasRings 
     if (moonRef.current && hasMoon) moonRef.current.rotation.y = t * 3.5;
   });
 
+  // Make Earth extra visible
+  const isEarth = name === 'Earth';
+  const displayColor = isEarth ? '#4da6ff' : color;
+  const emissiveIntensity = isEarth ? (hovered ? 0.5 : 0.15) : (hovered ? 0.35 : 0.04);
+
   return (
     <group ref={groupRef}>
       <mesh
         ref={planetRef}
         position={[distance, 0, 0]}
-        scale={hovered ? 1.25 : 1}
+        scale={hovered ? 1.3 : (isEarth ? 1.1 : 1)}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
         onClick={(e) => { e.stopPropagation(); onSelect?.(name); }}
       >
         <sphereGeometry args={[size, 32, 32]} />
-        <meshStandardMaterial color={color} roughness={0.55} metalness={0.15} emissive={color} emissiveIntensity={hovered ? 0.35 : 0.04} />
+        <meshStandardMaterial 
+          color={displayColor} 
+          roughness={isEarth ? 0.4 : 0.55} 
+          metalness={0.1} 
+          emissive={displayColor} 
+          emissiveIntensity={emissiveIntensity} 
+        />
       </mesh>
       {hasRings && <SaturnRings distance={distance} size={size} />}
       {hasMoon && (
         <group ref={moonRef} position={[distance, 0, 0]}>
-          <mesh position={[size * 2.5, 0.2, 0]}>
-            <sphereGeometry args={[size * 0.22, 16, 16]} />
-            <meshStandardMaterial color="#f4efe6" />
+          <mesh position={[size * 2.8, 0.15, 0]}>
+            <sphereGeometry args={[size * 0.25, 16, 16]} />
+            <meshStandardMaterial color="#eeeeee" />
           </mesh>
         </group>
       )}
@@ -122,7 +132,7 @@ function OrbitRing({ distance }) {
 const PLANETS = [
   { name: 'Mercury', distance: 3.2, size: 0.22, speed: 2.0, color: '#c47a2c' },
   { name: 'Venus', distance: 5.0, size: 0.38, speed: 1.4, color: '#e39a3c' },
-  { name: 'Earth', distance: 7.2, size: 0.42, speed: 1.0, color: '#4a7c59', hasMoon: true },
+  { name: 'Earth', distance: 7.2, size: 0.48, speed: 1.0, color: '#4da6ff', hasMoon: true },
   { name: 'Mars', distance: 9.5, size: 0.32, speed: 0.7, color: '#c45c2c' },
   { name: 'Jupiter', distance: 13, size: 1.0, speed: 0.4, color: '#d4a574' },
   { name: 'Saturn', distance: 16.5, size: 0.85, speed: 0.28, color: '#e8c9a0', hasRings: true },
@@ -137,10 +147,10 @@ export default function Scene() {
     <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#0a0908' }}>
       <div style={{ position: 'absolute', top: 24, left: 24, color: '#f4efe6', zIndex: 10, fontFamily: 'system-ui' }}>
         <h1 style={{ margin: 0, fontSize: 32, fontWeight: 600 }}>Solar System</h1>
-        <p style={{ margin: '6px 0 0', opacity: 0.7 }}>Click planet for info · Asteroid belt between Mars & Jupiter</p>
+        <p style={{ margin: '6px 0 0', opacity: 0.7 }}>Bumi (Earth) now bright blue · Click for info</p>
         {selected && (
           <div style={{ marginTop: 16, padding: 12, background: 'rgba(20,17,14,0.7)', borderRadius: 8, backdropFilter: 'blur(8px)' }}>
-            <strong>{selected}</strong>
+            <strong>{selected === 'Earth' ? 'Bumi (Earth)' : selected}</strong>
             <div style={{ fontSize: 13, opacity: 0.8, marginTop: 4 }}>Click another planet or drag to continue</div>
           </div>
         )}
@@ -148,8 +158,8 @@ export default function Scene() {
 
       <Canvas camera={{ position: [0, 12, 22], fov: 42 }} dpr={[1, 2]}>
         <color attach="background" args={['#0a0908']} />
-        <ambientLight intensity={0.04} />
-        <pointLight position={[0, 0, 0]} intensity={3} color="#e39a3c" distance={40} />
+        <ambientLight intensity={0.06} />
+        <pointLight position={[0, 0, 0]} intensity={3.2} color="#e39a3c" distance={40} />
 
         <Stars radius={180} depth={100} count={6000} factor={7} saturation={0} fade speed={0.3} />
         <Sparkles count={80} scale={30} size={1.2} speed={0.25} color="#f4efe6" />
